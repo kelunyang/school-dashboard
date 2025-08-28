@@ -1,0 +1,32 @@
+{
+  "comment": "此檔案為 Google Apps Script PropertiesService 配置範例",
+  "instructions": "請複製此檔案為 properitiesService.json 並填入實際值，然後在 GAS 中手動設置這些屬性",
+  
+  "authentication": {
+    "passKey": "YOUR_SYSTEM_PASS_KEY",
+    "GOOGLE_CLIENT_ID": "YOUR_GOOGLE_OAUTH_CLIENT_ID"
+  },
+  
+  "google_sheets": {
+    "newbieSheet": "YOUR_NEWBIE_SHEET_ID",
+    "graduateSheet": "YOUR_GRADUATE_SHEET_ID", 
+    "gsatSheet": "YOUR_GSAT_SHEET_ID",
+    "stSheet": "YOUR_ST_SHEET_ID",
+    "authSheet": "YOUR_AUTH_SHEET_ID",
+    "currentstudentSheet": "YOUR_CURRENT_STUDENT_SHEET_ID",
+    "geoInfoSheet": "YOUR_GEO_INFO_SHEET_ID",,
+    "universityListSheet": "YOUR_UNIVERSITY_LIST_SHEET_ID",
+    "universityRankingSheet": "YOUR_UNIVERSITY_RANKING_SHEET_ID",
+    "gsatBenchmarksSheet": "YOUR_GSAT_BENCHMARKS_SHEET_ID",
+    "stBenchmarksSheet": "YOUR_ST_BENCHMARKS_SHEET_ID",
+    "idNumberMappingSheet": "YOUR_ID_NUMBER_MAPPING_SHEET_ID",
+    "tabcontrolSheet": "YOUR_TABCONTROL_SHEET_ID",
+    "schemaSheet": "YOUR_SCHEMA_SHEET_ID",
+    "translateSheet": "YOUR_TRANSLATE_SHEET_ID"
+  },
+  
+  "system_settings": {
+    "activeTime": "30",
+    "manualDebug": "false"
+  }
+}

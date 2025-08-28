@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登入處理中...</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+    .container {
+      text-align: center;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 400px;
+    }
+    .success {
+      color: #67c23a;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .error {
+      color: #f56c6c;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .loading {
+      color: #409eff;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #409eff;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .redirect-info {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <div class="loading">登入處理中...</div>
+    <div class="redirect-info">請稍候，正在驗證您的登入資訊</div>
+  </div>
+
+  <script>
+    // 處理 OAuth callback
+    function handleOAuthCallback() {
+      try {
+        console.log('OAuth callback 頁面載入');
+        console.log('當前 URL:', window.location.href);
+        console.log('Hash:', window.location.hash);
+        console.log('是否為 popup:', !!window.opener);
+        
+        // 檢查 URL 是否包含 access_token
+        const hash = window.location.hash.substring(1);
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get('access_token');
+        const error = params.get('error');
+
+        console.log('Access token:', accessToken ? '已取得' : '未取得');
+        console.log('Error:', error);
+
+        if (error) {
+          console.error('OAuth 錯誤:', error);
+          showError('登入失敗: ' + (params.get('error_description') || error));
+          return;
+        }
+
+        if (accessToken) {
+          console.log('取得 access token，準備傳遞給父視窗');
+          showSuccess('登入成功！正在跳轉...');
+          
+          // 將 access token 傳遞給父視窗（如果是 popup）
+          if (window.opener) {
+            console.log('向父視窗發送 postMessage');
+            window.opener.postMessage({
+              type: 'oauth_success',
+              accessToken: accessToken
+            }, window.location.origin);
+            
+            // 延遲關閉視窗，確保訊息已傳送
+            setTimeout(() => {
+              console.log('關閉 popup 視窗');
+              window.close();
+            }, 1000);
+          } else {
+            console.log('非 popup 模式，儲存 token 並跳轉');
+            // 如果不是 popup，儲存 token 並跳轉
+            sessionStorage.setItem('oauth_access_token', accessToken);
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 2000);
+          }
+        } else {
+          console.error('未收到 access token 或 error');
+          showError('未收到授權資訊，請重試');
+        }
+      } catch (error) {
+        console.error('處理 OAuth callback 錯誤:', error);
+        showError('處理登入資訊時發生錯誤: ' + error.message);
+      }
+    }
+
+    function showSuccess(message) {
+      const container = document.querySelector('.container');
+      container.innerHTML = `
+        <div style="color: #67c23a; font-size: 2rem; margin-bottom: 1rem;">✓</div>
+        <div class="success">${message}</div>
+        <div class="redirect-info">即將自動跳轉到主頁面</div>
+      `;
+    }
+
+    function showError(message) {
+      const container = document.querySelector('.container');
+      container.innerHTML = `
+        <div style="color: #f56c6c; font-size: 2rem; margin-bottom: 1rem;">✗</div>
+        <div class="error">${message}</div>
+        <div class="redirect-info">
+          <a href="/" style="color: #409eff;">點此返回主頁</a>
+        </div>
+      `;
+    }
+
+    // 頁面載入後執行
+    document.addEventListener('DOMContentLoaded', handleOAuthCallback);
+  </script>
+</body>
+</html>

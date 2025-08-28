@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>學校儀表板系統 - 測試版</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      // 從後端取得 Google Client ID
+      window.GOOGLE_CLIENT_ID = '<?= googleClientId || "" ?>';
+      console.log('Google Client ID loaded:', window.GOOGLE_CLIENT_ID);
+      
+      // 處理 iframe 環境
+      try {
+        if (window.parent !== window) {
+          console.log('Running in iframe mode');
+        }
+      } catch (e) {
+        console.log('Cross-origin iframe detected');
+      }
+      
+      // 防止語法錯誤影響整個頁面
+      window.addEventListener('error', function(e) {
+        console.error('Global error caught:', e.message, e.filename, e.lineno);
+        return true;
+      });
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <h1>學校儀表板系統 - 測試版</h1>
+      <p>這是一個極簡化的測試版本，用來檢驗是否為檔案大小問題。</p>
+      
+      <div id="google-signin-container" style="margin: 20px 0;">
+        <button id="google-signin-btn" onclick="handleGoogleSignIn()" 
+                style="padding: 12px 24px; font-size: 16px; background: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer;">
+          使用 Google 帳號登入
+        </button>
+      </div>
+      
+      <div id="status" style="margin: 20px 0; padding: 10px; border-radius: 4px; display: none;">
+      </div>
+      
+      <div id="user-info" style="margin: 20px 0; display: none;">
+        <h3>登入資訊</h3>
+        <p><strong>姓名：</strong><span id="user-name"></span></p>
+        <p><strong>Email：</strong><span id="user-email"></span></p>
+        <button onclick="handleSignOut()" 
+                style="padding: 8px 16px; background: #db4437; color: white; border: none; border-radius: 4px; cursor: pointer;">
+          登出
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let gapi;
+      
+      function showStatus(message, isError = false) {
+        const statusDiv = document.getElementById('status');
+        statusDiv.textContent = message;
+        statusDiv.style.display = 'block';
+        statusDiv.style.backgroundColor = isError ? '#f8d7da' : '#d4edda';
+        statusDiv.style.color = isError ? '#721c24' : '#155724';
+        statusDiv.style.border = isError ? '1px solid #f5c6cb' : '1px solid #c3e6cb';
+      }
+      
+      function showUserInfo(profile) {
+        document.getElementById('user-name').textContent = profile.getName();
+        document.getElementById('user-email').textContent = profile.getEmail();
+        document.getElementById('user-info').style.display = 'block';
+        document.getElementById('google-signin-btn').style.display = 'none';
+      }
+      
+      function hideUserInfo() {
+        document.getElementById('user-info').style.display = 'none';
+        document.getElementById('google-signin-btn').style.display = 'inline-block';
+      }
+      
+      function handleGoogleSignIn() {
+        if (!window.GOOGLE_CLIENT_ID) {
+          showStatus('錯誤：未設定 Google Client ID', true);
+          return;
+        }
+        
+        showStatus('正在初始化 Google 登入...');
+        
+        gapi.load('auth2', function() {
+          gapi.auth2.init({
+            client_id: window.GOOGLE_CLIENT_ID
+          }).then(function() {
+            const authInstance = gapi.auth2.getAuthInstance();
+            return authInstance.signIn();
+          }).then(function(user) {
+            const profile = user.getBasicProfile();
+            showStatus('登入成功！');
+            showUserInfo(profile);
+            
+            // 測試後端授權檢查
+            google.script.run
+              .withSuccessHandler(function(result) {
+                console.log('Backend auth test:', result);
+                showStatus('前後端連線測試成功！用戶：' + result.user);
+              })
+              .withFailureHandler(function(error) {
+                console.error('Backend auth test failed:', error);
+                showStatus('後端連線測試失敗：' + error.message, true);
+              })
+              .testAuth();
+              
+          }).catch(function(error) {
+            console.error('Google Sign-In error:', error);
+            showStatus('Google 登入失敗：' + error.error, true);
+          });
+        });
+      }
+      
+      function handleSignOut() {
+        if (gapi && gapi.auth2) {
+          const authInstance = gapi.auth2.getAuthInstance();
+          authInstance.signOut().then(function() {
+            hideUserInfo();
+            showStatus('已成功登出');
+          });
+        }
+      }
+      
+      // 載入 Google API
+      function loadGoogleAPI() {
+        if (typeof gapi === 'undefined') {
+          const script = document.createElement('script');
+          script.src = 'https://apis.google.com/js/platform.js';
+          script.onload = function() {
+            gapi = window.gapi;
+            showStatus('Google API 載入完成，點擊按鈕登入');
+          };
+          script.onerror = function() {
+            showStatus('Google API 載入失敗', true);
+          };
+          document.head.appendChild(script);
+        }
+      }
+      
+      // 頁面載入完成後初始化
+      window.addEventListener('load', function() {
+        loadGoogleAPI();
+      });
+    </script>
+  </body>
+</html>

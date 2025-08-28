@@ -1,0 +1,42 @@
+{
+  "name": "school-dashboard",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:gas": "vite build --config vite.config.gas.js",
+    "preview": "vite preview",
+    "prepare:gas": "node scripts/buildForGAS.cjs",
+    "deploy:gas": "npm run prepare:gas && cd gas-deploy && clasp push",
+    "setup:gas": "cd gas-deploy && clasp create --type webapp --title '學校儀表板'",
+    "watch:gas": "cd gas-deploy && clasp push --watch",
+    "logs:gas": "cd gas-deploy && clasp logs",
+    "open:gas": "cd gas-deploy && clasp open --webapp"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "@tanstack/vue-table": "^8.21.3",
+    "@types/leaflet": "^1.9.20",
+    "d3": "^7.9.0",
+    "echarts": "^6.0.0",
+    "element-plus": "^2.10.4",
+    "jszip": "^3.10.1",
+    "leaflet": "^1.9.4",
+    "leaflet.heat": "^0.2.0",
+    "papaparse": "^5.5.3",
+    "sortablejs": "^1.15.6",
+    "unplugin-auto-import": "^19.3.0",
+    "unplugin-vue-components": "^28.8.0",
+    "vue": "^3.5.17"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.4",
+    "terser": "^5.43.1",
+    "vite": "^5.4.19"
+  }
+}

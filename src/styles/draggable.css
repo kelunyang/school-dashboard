@@ -1,0 +1,131 @@
+/* 拖拽相關樣式 */
+.el-table__header-wrapper .el-table__header th {
+  cursor: move;
+  position: relative;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.el-table__header-wrapper .el-table__header th.el-table-column--selection {
+  cursor: default;
+}
+
+/* 拖拽握把樣式 */
+.el-table__header-wrapper .el-table__header th:not(.el-table-column--selection) .cell {
+  position: relative;
+  padding-left: 20px;
+}
+
+.el-table__header-wrapper .el-table__header th:not(.el-table-column--selection) .cell::before {
+  content: '⋮⋮';
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #c0c4cc;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+  transition: color 0.3s ease;
+}
+
+/* 鼠標懸停效果 */
+.el-table__header-wrapper .el-table__header th:not(.el-table-column--selection):hover {
+  background-color: #f5f7fa;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.el-table__header-wrapper .el-table__header th:not(.el-table-column--selection):hover .cell::before {
+  color: #409eff;
+}
+
+/* 拖拽時的樣式 */
+.sortable-ghost {
+  opacity: 0.4 !important;
+  background-color: #e6f7ff !important;
+  border: 2px dashed #409eff !important;
+  transform: rotate(2deg);
+}
+
+.sortable-chosen {
+  background-color: #409eff !important;
+  color: white !important;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+  z-index: 1000;
+}
+
+.sortable-drag {
+  background-color: #409eff !important;
+  color: white !important;
+  opacity: 0.9 !important;
+  transform: rotate(-2deg) scale(1.05);
+  box-shadow: 0 8px 25px rgba(64, 158, 255, 0.4);
+}
+
+/* 拖拽指示線 */
+body.dragging-column .el-table__header th {
+  position: relative;
+}
+
+body.dragging-column .el-table__header th::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -2px;
+  width: 4px;
+  height: 100%;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+}
+
+/* 放置位置指示 */
+body.dragging-column .el-table__header th:hover::after {
+  background-color: #67c23a;
+  box-shadow: 0 0 10px rgba(103, 194, 58, 0.5);
+}
+
+/* 固定列不允許拖拽 */
+.el-table__header-wrapper .el-table__header th.is-hidden,
+.el-table__header-wrapper .el-table__header th[class*="el-table-fixed"] {
+  cursor: not-allowed !important;
+}
+
+.el-table__header-wrapper .el-table__header th.is-hidden .cell::before,
+.el-table__header-wrapper .el-table__header th[class*="el-table-fixed"] .cell::before {
+  content: '' !important;
+}
+
+.el-table__header-wrapper .el-table__header th.is-hidden .cell,
+.el-table__header-wrapper .el-table__header th[class*="el-table-fixed"] .cell {
+  padding-left: inherit;
+}
+
+/* 拖拽時的全局提示 */
+body.dragging-column::before {
+  content: '鬆開滑鼠來放置欄位到新位置';
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #409eff;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
