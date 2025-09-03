@@ -56,6 +56,7 @@
 <script setup>
 import { ref, onMounted, watch, nextTick } from 'vue'
 import * as d3 from 'd3'
+import randomColor from 'randomcolor'
 
 const props = defineProps({
   subjectName: {
@@ -91,6 +92,10 @@ const textVersionVisible = ref(false)
 const displayMode = ref('count')
 const tableData = ref([])
 const availableYears = ref([])
+
+// 顏色配置相關
+let useCustomColors = false
+let customBenchmarkColors = null
 
 const drawChart = () => {
   if (!chartContainer.value || props.loading) return
@@ -181,6 +186,24 @@ const drawChart = () => {
     const benchmark = props.benchmark[year]
     const scoreNum = parseInt(score)
     
+    // 如果使用自定義顏色，從自定義顏色中獲取
+    if (useCustomColors && customBenchmarkColors) {
+      if (scoreNum >= (benchmark.top || 50)) {
+        return customBenchmarkColors.top
+      } else if (scoreNum >= (benchmark.front || 40)) {
+        return customBenchmarkColors.front
+      } else if (scoreNum >= (benchmark.average || 30)) {
+        return customBenchmarkColors.average
+      } else if (scoreNum >= (benchmark.back || 20)) {
+        return customBenchmarkColors.back
+      } else if (scoreNum >= (benchmark.bottom || 15)) {
+        return customBenchmarkColors.bottom
+      } else {
+        return customBenchmarkColors.belowBottom
+      }
+    }
+    
+    // 使用預設顏色
     if (scoreNum >= (benchmark.top || 50)) {
       return '#E74C3C' // 頂標：紅色
     } else if (scoreNum >= (benchmark.front || 40)) {
@@ -304,14 +327,26 @@ const drawChart = () => {
   const benchmarkLegend = svg.append('g')
     .attr('transform', `translate(${margin.left}, ${margin.top + height + 20})`)
   
-  const benchmarkColors = [
-    { name: '頂標', color: '#E74C3C' },
-    { name: '前標', color: '#F39C12' },
-    { name: '均標', color: '#F1C40F' },
-    { name: '後標', color: '#95A5A6' },
-    { name: '底標', color: '#3498DB' },
-    { name: '底標以下', color: '#9B59B6' }
-  ]
+  let benchmarkColors
+  if (useCustomColors && customBenchmarkColors) {
+    benchmarkColors = [
+      { name: '頂標', color: customBenchmarkColors.top },
+      { name: '前標', color: customBenchmarkColors.front },
+      { name: '均標', color: customBenchmarkColors.average },
+      { name: '後標', color: customBenchmarkColors.back },
+      { name: '底標', color: customBenchmarkColors.bottom },
+      { name: '底標以下', color: customBenchmarkColors.belowBottom }
+    ]
+  } else {
+    benchmarkColors = [
+      { name: '頂標', color: '#E74C3C' },
+      { name: '前標', color: '#F39C12' },
+      { name: '均標', color: '#F1C40F' },
+      { name: '後標', color: '#95A5A6' },
+      { name: '底標', color: '#3498DB' },
+      { name: '底標以下', color: '#9B59B6' }
+    ]
+  }
   
   benchmarkColors.forEach((item, i) => {
     const legendItem = benchmarkLegend.append('g')
@@ -422,6 +457,37 @@ const downloadCSV = () => {
   link.click()
   document.body.removeChild(link)
 }
+
+// 重新配色功能
+const recolor = () => {
+  if (!props.scores || !props.scores.length) return
+  
+  // 生成新的五標顏色
+  const newColors = randomColor({
+    count: 6,
+    luminosity: 'bright',
+    seed: Math.floor(Math.random() * 10000)
+  })
+  
+  customBenchmarkColors = {
+    top: newColors[0],        // 頂標
+    front: newColors[1],      // 前標
+    average: newColors[2],    // 均標
+    back: newColors[3],       // 後標
+    bottom: newColors[4],     // 底標
+    belowBottom: newColors[5] // 底標以下
+  }
+  
+  useCustomColors = true
+  
+  // 重新繪製圖表
+  drawChart()
+}
+
+// 暴露方法給父組件
+defineExpose({
+  recolor
+})
 </script>
 
 <style scoped>

@@ -124,9 +124,12 @@
           :title="`分科成績統計 - ${subject.name}`" 
           :file-name="`st_score_${subject.key}`"
           :show-percentage-toggle="true"
+          :show-recolor-button="true"
           v-model="chartPercentageMode[subject.key]"
+          @recolor="$refs[`stChart_${subject.key}`]?.[0]?.recolor()"
         >
           <STSubjectChart
+            :ref="`stChart_${subject.key}`"
             :subject-name="subject.name"
             :subject-key="subject.key"
             :scores="getSubjectScores(subject.key)"

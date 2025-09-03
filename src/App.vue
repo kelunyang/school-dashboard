@@ -124,9 +124,9 @@
             <div v-if="selectedDashboard && selectedDashboard !== 'currentStudent' && availableYears.length > 0" style="margin-top: 20px;">
               <div class="year-selector-container">
                 <span class="year-selector-label">選擇年度：</span>
-                <!-- 新生、學測、分科模式使用多選 -->
+                <!-- 新生、學測、分科、畢業生模式使用多選 -->
                 <el-select 
-                  v-if="['newbie', 'examScore', 'stScore'].includes(selectedDashboard)"
+                  v-if="['newbie', 'examScore', 'stScore', 'graduate'].includes(selectedDashboard)"
                   v-model="selectedYears" 
                   multiple
                   placeholder="選擇年度" 
@@ -144,7 +144,7 @@
                     :value="year"
                   />
                 </el-select>
-                <!-- 畢業生模式使用單選 -->
+                <!-- 其他模式使用單選（目前沒有其他模式） -->
                 <el-select 
                   v-else
                   v-model="selectedYear" 
@@ -257,8 +257,8 @@
           class="dashboard-loading-container"
         >
           <GraduateDashboard 
-            :selected-year="selectedYear" 
-            :data-package="currentDataPackage" 
+            :selected-years="selectedYears" 
+            :data-refresh-trigger="dataRefreshing"
             @loading-change="handleDashboardLoadingChange" 
             @data-loaded="handleGraduateDataLoaded"
             @show-last-modified="() => showLastModifiedDialog('graduate')"
@@ -1265,16 +1265,28 @@ const loadOptimizedAvailableYears = async () => {
     const yearsResult = await optimizedApiService.getAvailableYears()
     if (yearsResult && yearsResult.all && Array.isArray(yearsResult.all)) {
       availableYears.value = yearsResult.all
-      // 總是選擇最新的年份
+      // 設定預設年份
       if (yearsResult.all.length > 0) {
-        selectedYear.value = yearsResult.all[0]
-        debugLog('設定預設年份:', selectedYear.value)
-        // 只有當 selectedDashboard 存在且不是新生模式時才載入數據包
-        if (selectedDashboard.value && selectedDashboard.value !== 'newbie') {
+        // 畢業生模式使用多選，預設選擇所有年份
+        if (selectedDashboard.value === 'graduate') {
+          selectedYears.value = [...yearsResult.all]
+          debugLog('畢業生模式設定預設年份:', selectedYears.value)
+        } else if (['examScore', 'stScore'].includes(selectedDashboard.value)) {
+          // 學測和分科模式使用多選，但預設為空陣列（顯示全部）
+          selectedYears.value = []
+          debugLog('學測/分科模式保持預設狀態（顯示所有年份）')
+        } else {
+          // 其他模式使用單選
+          selectedYear.value = yearsResult.all[0]
+          debugLog('設定預設年份:', selectedYear.value)
+        }
+        
+        // 只有當 selectedDashboard 存在且不是新生和畢業生模式時才載入數據包
+        if (selectedDashboard.value && !['newbie', 'graduate'].includes(selectedDashboard.value)) {
           debugLog('載入數據包:', selectedYear.value, selectedDashboard.value)
           await loadCompleteDataPackage(selectedYear.value, selectedDashboard.value)
-        } else if (selectedDashboard.value === 'newbie') {
-          debugLog('🚀 新生模式跳過年份載入時的數據包載入')
+        } else if (['newbie', 'graduate'].includes(selectedDashboard.value)) {
+          debugLog('🚀 新生/畢業生模式跳過年份載入時的數據包載入')
         }
       }
     }

@@ -5,6 +5,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import * as d3 from 'd3'
+import randomColor from 'randomcolor'
 
 const props = defineProps({
   data: {
@@ -22,6 +23,7 @@ const loading = ref(false)
 
 let svg = null
 let resizeObserver = null
+let currentColorScale = null
 
 const drawChart = async (data) => {
   if (!chartContainer.value || !data.length) return
@@ -72,9 +74,12 @@ const drawChart = async (data) => {
     .range([0, width])
 
   // 顏色比例尺 - 公私立用不同顏色
-  const colorScale = d3.scaleOrdinal()
-    .domain(['公立', '私立', '未知'])
-    .range(['#409EFF', '#F56C6C', '#909399'])
+  if (!currentColorScale) {
+    currentColorScale = d3.scaleOrdinal()
+      .domain(['公立', '私立', '未知'])
+      .range(['#409EFF', '#F56C6C', '#909399'])
+  }
+  const colorScale = currentColorScale
 
   // 堆疊資料
   const stackData = categories.map(category => ({
@@ -234,6 +239,34 @@ watch(() => props.isPercentage, () => {
   if (props.data && props.data.length > 0) {
     drawChart(props.data)
   }
+})
+
+// 重新配色功能
+const recolor = () => {
+  if (!props.data || !props.data.length) return
+  
+  // 取得所有類別
+  const categories = [...new Set(props.data.map(d => d.category))]
+  
+  // 生成新的顏色
+  const newColors = randomColor({
+    count: categories.length,
+    luminosity: 'bright',
+    seed: Math.floor(Math.random() * 10000)
+  })
+  
+  // 建立新的顏色比例尺
+  currentColorScale = d3.scaleOrdinal()
+    .domain(categories)
+    .range(newColors)
+  
+  // 重新繪製圖表
+  drawChart(props.data)
+}
+
+// 暴露方法給父組件
+defineExpose({
+  recolor
 })
 </script>
 

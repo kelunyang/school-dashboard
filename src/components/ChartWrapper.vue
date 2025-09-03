@@ -3,15 +3,26 @@
     <div class="chart-header">
       <h3 class="chart-title">{{ title }}</h3>
       <div class="chart-actions">
-        <div v-if="showPercentageToggle" class="percentage-toggle">
-          <span class="toggle-label">百分比模式</span>
-          <el-switch 
-            v-model="isPercentageMode"
-            @change="togglePercentageMode"
-            active-text=""
-            inactive-text=""
-            :title="isPercentageMode ? '切換到絕對數量' : '切換到百分比模式'"
-          />
+        <div v-if="showPercentageToggle || showRecolorButton" class="toggle-section">
+          <div v-if="showPercentageToggle" class="percentage-toggle">
+            <span class="toggle-label">百分比模式</span>
+            <el-switch 
+              v-model="isPercentageMode"
+              @change="togglePercentageMode"
+              active-text=""
+              inactive-text=""
+              :title="isPercentageMode ? '切換到絕對數量' : '切換到百分比模式'"
+            />
+          </div>
+          <el-button 
+            v-if="showRecolorButton"
+            type="text" 
+            @click="$emit('recolor')"
+            title="重新配色"
+            class="recolor-btn"
+          >
+            重新配色
+          </el-button>
         </div>
         <el-button 
           v-if="chartData && chartData.length > 0"
@@ -51,9 +62,9 @@
         >
           下載 CSV
         </el-button>
-        <el-radio-group v-model="displayMode">
-          <el-radio value="count">絕對數字</el-radio>
-          <el-radio value="percentage">百分比</el-radio>
+        <el-radio-group v-model="displayMode" @change="updateTableData">
+          <el-radio label="count">絕對數字</el-radio>
+          <el-radio label="percentage">百分比</el-radio>
         </el-radio-group>
       </div>
       
@@ -72,7 +83,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Download } from '@element-plus/icons-vue'
 import { useChartDownload } from '../composables/useChartDownload'
 
@@ -100,10 +111,14 @@ const props = defineProps({
   textFormatter: {
     type: Function,
     default: null
+  },
+  showRecolorButton: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'recolor'])
 
 const isPercentageMode = computed({
   get: () => props.modelValue,
@@ -168,6 +183,18 @@ const downloadCSV = () => {
   link.click()
   document.body.removeChild(link)
 }
+
+// 更新表格資料
+const updateTableData = (newMode) => {
+  if (props.textFormatter && props.chartData) {
+    const formattedData = props.textFormatter(props.chartData, newMode)
+    tableData.value = formattedData.data
+    tableColumns.value = formattedData.columns
+  }
+}
+
+// 監聽顯示模式變更，重新產生表格資料
+watch(displayMode, updateTableData)
 </script>
 
 <style scoped>
@@ -198,22 +225,35 @@ const downloadCSV = () => {
   color: #303133;
 }
 
-.download-btn {
+.download-btn,
+.text-version-btn,
+.recolor-btn {
   color: #409eff;
   font-size: 12px;
   padding: 4px 8px;
 }
 
-.download-btn:hover {
+.download-btn:hover,
+.text-version-btn:hover,
+.recolor-btn:hover {
   background-color: #ecf5ff;
   color: #337ecc;
+}
+
+.toggle-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 12px;
+  padding: 4px 8px;
+  background: #f5f7fa;
+  border-radius: 4px;
 }
 
 .percentage-toggle {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-right: 12px;
 }
 
 .toggle-label {

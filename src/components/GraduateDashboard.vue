@@ -27,9 +27,11 @@
             :chart-data="processedData.pathwayData"
             :text-formatter="pathwayTextFormatter"
             :show-percentage-toggle="true"
+            :show-recolor-button="true"
             v-model="chartDisplayModes.pathway"
+            @recolor="$refs.pathwayChart.recolor()"
           >
-            <PathwayChart :data="processedData.pathwayData" :is-percentage="chartDisplayModes.pathway" />
+            <PathwayChart ref="pathwayChart" :data="processedData.pathwayData" :is-percentage="chartDisplayModes.pathway" />
           </ChartWrapper>
         </div>
       </el-col>
@@ -41,9 +43,11 @@
             :chart-data="processedData.schoolData"
             :text-formatter="schoolTextFormatter"
             :show-percentage-toggle="true"
+            :show-recolor-button="true"
             v-model="chartDisplayModes.school"
+            @recolor="$refs.schoolChart.recolor()"
           >
-            <SchoolChart :data="processedData.schoolData" :is-percentage="chartDisplayModes.school" />
+            <SchoolChart ref="schoolChart" :data="processedData.schoolData" :is-percentage="chartDisplayModes.school" />
           </ChartWrapper>
         </div>
       </el-col>
@@ -55,9 +59,11 @@
             :chart-data="processedData.typeData"
             :text-formatter="typeTextFormatter"
             :show-percentage-toggle="true"
+            :show-recolor-button="true"
             v-model="chartDisplayModes.type"
+            @recolor="$refs.typeChart.recolor()"
           >
-            <TypeChart :data="processedData.typeData" :is-percentage="chartDisplayModes.type" />
+            <TypeChart ref="typeChart" :data="processedData.typeData" :is-percentage="chartDisplayModes.type" />
           </ChartWrapper>
         </div>
       </el-col>

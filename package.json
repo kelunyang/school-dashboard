@@ -29,6 +29,7 @@
     "leaflet": "^1.9.4",
     "leaflet.heat": "^0.2.0",
     "papaparse": "^5.5.3",
+    "randomcolor": "^0.6.2",
     "sortablejs": "^1.15.6",
     "unplugin-auto-import": "^19.3.0",
     "unplugin-vue-components": "^28.8.0",
